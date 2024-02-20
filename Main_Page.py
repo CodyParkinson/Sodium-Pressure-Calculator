@@ -3,7 +3,7 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Main Page
 
 Cody Parkinson
-Last Update: 02/19/2024
+Last Update: 02/20/2024
 '''
 
 
@@ -56,7 +56,7 @@ massOfwater = OuterCapsuleVoidVolume * water_density(waterTemperature, waterPres
 molesOfWater = massOfwater / 18.02 # Water is 18.02 g/mol
 
 #2. Use mass of sodium in the capsule (or capsule + rodlet) to determine volume of sodium initially present (cm^3).
-volumeOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet) + sodium_density(waterTemperature + 273.15) # Convert temperature to K for function
+volumeOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet) / sodium_density(waterTemperature + 273.15) # Convert temperature to K for function
 
 # 3. Use the mass of sodium in capsule (+ rodlet) to determine the moles of sodium available.
 molesOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet) / 22.98977 # Sodium g/mol
@@ -68,4 +68,17 @@ molesOfNaOH = molesOfSodium
 massOfHydrogen = molesOfHydrogen * 2.016 # H2 g/mol
 massOfNaOH = molesOfNaOH * 39.997 #NaOH g/mol
 
-# 5. Determine the concentration of the produced NaOH to estime the density of the NaOH solution.
+# 5. Determine the concentration of the produced NaOH to estimate the density of the NaOH solution.
+# Note on NaOH solution mass, account for mass of NaOH and remaining water within capsule (not reacted), subtract H2 mass
+massOfNaOHSolution = massOfNaOH - massOfHydrogen + ((molesOfWater - molesOfSodium) * 18.02)
+
+NaOHwtPercent = (massOfNaOH / massOfNaOHSolution) * 100
+
+# 6. Use the denisty and mass of NaOH to determine final volume of NaOH solution. (cm^3)
+volumeOfNaOHSolution = massOfNaOHSolution
+
+
+
+
+
+
