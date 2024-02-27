@@ -4,6 +4,8 @@ Main Page
 
 Cody Parkinson
 Last Update: 02/26/2024
+
+Just for Cody: Make sure to run in python3.9
 '''
 
 
