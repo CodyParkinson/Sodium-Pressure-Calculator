@@ -3,8 +3,9 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Main Page
 
 Cody Parkinson
-Last Update: 02/20/2024
+Last Update: 02/26/2024
 '''
+
 
 
 
@@ -13,72 +14,45 @@ Last Update: 02/20/2024
 Imports
 '''
 
-from Sodium_Density_Func import sodium_density
-from Water_Density_Func import water_density
-
-
-
-
-'''
-User Input Defaults
-'''
-
-# Water Temperature (C)
-waterTemperature = 100.0
-
-# Water Pressure (MPa)
-waterPressureATR = 350.0/145.038 # Convert psi to MPa from ATR
-
-# cm^3
-OuterCapsuleVoidVolume = 4.269
-
-# cm^3
-InnerCapsuleVoidVolume = 1.970
-
-# Mass of sodium (g)
-massOfSodiumCapsule = 1.771
-massOfSodiumRodlet = 2.182 - 1.771
-
-
-
+import tkinter as tk
+from tkinter import ttk
+from Calculator_Steps import MaximumPressureCalculator
 
 
 
 
 
 '''
-Calculations:
-Step numbers are directly related to Terrapower steps
+Tkinter
 '''
 
-# 1. Use the outer capusule void volume and water density to determine the maximum mass/moles of water available.
-massOfwater = OuterCapsuleVoidVolume * water_density(waterTemperature, waterPressureATR)
-molesOfWater = massOfwater / 18.02 # Water is 18.02 g/mol
+root = tk.Tk()
+root.title("Chemical Reaction Calculator")
 
-#2. Use mass of sodium in the capsule (or capsule + rodlet) to determine volume of sodium initially present (cm^3).
-volumeOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet) / sodium_density(waterTemperature + 273.15) # Convert temperature to K for function
+# Template for creating an entry field
+def create_entry_field(root, label_text, row, column):
+    # Create a label for the entry
+    label = ttk.Label(root, text=label_text)
+    label.grid(row=row, column=column)
 
-# 3. Use the mass of sodium in capsule (+ rodlet) to determine the moles of sodium available.
-molesOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet) / 22.98977 # Sodium g/mol
+    # Create a StringVar to hold the text of the entry
+    entry_variable = tk.StringVar()
 
-# 4. Use moles of sodium to determine max amount of hydrogen and sodium hydroxide produced in reaction. (Na is limiting reagent)
-molesOfHydrogen = molesOfSodium * 0.5
-molesOfNaOH = molesOfSodium
+    # Create the entry widget and attach it to the StringVar
+    entry = ttk.Entry(root, textvariable=entry_variable)
+    entry.grid(row=row, column=column + 1)
 
-massOfHydrogen = molesOfHydrogen * 2.016 # H2 g/mol
-massOfNaOH = molesOfNaOH * 39.997 #NaOH g/mol
+    # Return the StringVar associated with the entry, to retrieve its value later
+    return entry_variable
 
-# 5. Determine the concentration of the produced NaOH to estimate the density of the NaOH solution.
-# Note on NaOH solution mass, account for mass of NaOH and remaining water within capsule (not reacted), subtract H2 mass
-massOfNaOHSolution = massOfNaOH - massOfHydrogen + ((molesOfWater - molesOfSodium) * 18.02)
+# Example usage of the template to create an entry field
+# The returned StringVar can be used to get the value entered by the user
+water_temperature_var = create_entry_field(root, "Water Temperature (C)", 0, 0)
+# You can create more entry fields using the same template
 
-NaOHwtPercent = (massOfNaOH / massOfNaOHSolution) * 100
+# Calculate button
+calculate_button = ttk.Button(root, text="Calculate", command=MaximumPressureCalculator(1,1,1,1,1,1))
+calculate_button.grid(row=10, column=0, columnspan=2)  # Adjust the row and column as needed
 
-# 6. Use the denisty and mass of NaOH to determine final volume of NaOH solution. (cm^3)
-volumeOfNaOHSolution = massOfNaOHSolution
-
-
-
-
-
+root.mainloop()
 

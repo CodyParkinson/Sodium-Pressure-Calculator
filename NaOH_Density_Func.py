@@ -3,6 +3,14 @@ NaOH Density Function based on temperature and weight percent
 
 Cody Parkinson
 Last Update: 02/26/2024
+
+Two functions are listed below for the calculation of the NaOH density based on wt % and temperature.
+Above each of the functions their is a link to where the data was collected. Both functions produce
+somwhat similar results. Section 1 is a very similar result to what is calculated in the ECAR. Section 2
+provides an answer with a higher density than section 1. I am leaving both methods below, but Section 1
+will be used within the Main Page. This is because the lower density means there is less available room
+for the hydrogen to collect in. This will provide a more conservative estimate of the pressure within the
+vessel.
 '''
 
 
@@ -13,13 +21,12 @@ https://www.handymath.com/cgi-bin/naohtble3.cgi?submit=Back+to+Calculator&tmptr=
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
+# Define the weight percent and temperature arrays based on the table
+weight_percent1 = np.array([1, 2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 50])
+temperatures1 = np.array([0, 15, 20, 40, 60, 80, 100])
 
-# Define the weight percent and temperature arrays based on the provided table
-weight_percent = np.array([1, 2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 50])
-temperatures = np.array([0, 15, 20, 40, 60, 80, 100])
-
-# Define the density array (fill this with the actual data from the table)
-densities = np.array([
+# Define the density array
+densities1 = np.array([
     # Temperatures: 0°C, 15°C, 20°C, 40°C, 60°C, 80°C, 100°C
     [1.0124, 1.01065, 1.0095, 1.0033, 0.9941, 0.9824, 0.9693],  # 1%
     [1.0244, 1.02198, 1.0207, 1.0139, 1.0045, 0.9929, 0.9797],  # 2%
@@ -39,23 +46,12 @@ densities = np.array([
 ])
 
 # Create the interpolator function
-interp_func = RegularGridInterpolator((weight_percent, temperatures), densities)
+interp_func1 = RegularGridInterpolator((weight_percent1, temperatures1), densities1, bounds_error=False, fill_value=None)
 
 # Define the function to get the interpolated density
-def get_density(wt_percent, temp):
+def NaOH_Density1(wt_percent, temp):
     point = np.array([wt_percent, temp])
-    return interp_func([point])[0]
-
-# Example usage
-wt_percent_input = 50  # Example: 5% weight
-temp_input = 100  # Example: 25°C
-
-density_output = get_density(wt_percent_input, temp_input)
-print(f"Estimated density at {wt_percent_input}% weight and {temp_input}°C is {density_output:.4f} g/cm^3")
-
-
-
-
+    return interp_func1([point])[0]
 
 
 
@@ -63,19 +59,19 @@ print(f"Estimated density at {wt_percent_input}% weight and {temp_input}°C is {
 Section 2 based on data from:
 https://advancedthermo.com/electrolytes/density_NaOH.html
 '''
+# Function calculates molality from a given wt %
 def weight_percent_to_molality(wt_percent, molecular_weight_NaOH=40):
     mass_NaOH = wt_percent / 100 * 1000  # mass of NaOH in grams in 1 kg of solution
     mass_water = 1000 - mass_NaOH  # mass of water in grams
     molality = mass_NaOH / molecular_weight_NaOH / (mass_water / 1000)  # molality (mol/kg)
     return molality
 
-
-# Example molality and temperature arrays
-molality = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0])
-temperatures = np.array([10.0, 25.0, 40.0, 55.0, 70.0, 85.0]) # Temperatures from your table
+# Molality and temperature arrays
+molality2 = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0])
+temperatures2 = np.array([10.0, 25.0, 40.0, 55.0, 70.0, 85.0])
 
 # Define your densities array with the actual data
-densities = np.array([
+densities2 = np.array([
     [1.00437, 1.00149, 0.99654, 0.98996, 0.98200, 0.97282],
     [1.00893, 1.00584, 1.00078, 0.99414, 0.98615, 0.97696],
     [1.01342, 1.01014, 1.00498, 0.99827, 0.99025, 0.98106],
@@ -102,18 +98,10 @@ densities = np.array([
 ])
 
 # Create the interpolator function
-interp_func = RegularGridInterpolator((molality, temperatures), densities, bounds_error=False, fill_value=None)
+interp_func2 = RegularGridInterpolator((molality2, temperatures2), densities2, bounds_error=False, fill_value=None)
 
 # Define the function to get the interpolated/extrapolated density
-def get_density(mol, temp):
+def NaOH_Density2(mol, temp):
     point = np.array([[mol, temp]])
-    density = interp_func(point)
+    density = interp_func2(point)
     return density[0]
-
-# Example usage
-mol_input = weight_percent_to_molality(wt_percent_input)  # Example molality beyond the provided range
-
-density_output = get_density(mol_input, temp_input)
-print(f"The estimated density at {mol_input} mol/kg and {temp_input}°C is {density_output:.4f} g/cm³")
-
-
