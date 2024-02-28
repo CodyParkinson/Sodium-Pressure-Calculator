@@ -3,7 +3,7 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Steps File
 
 Cody Parkinson
-Last Update: 02/26/2024
+Last Update: 02/27/2024
 
 This file is used in the Main_Page to display the anticipated maximum pressure of the vessel
 after a sodium and water interaction.
@@ -103,3 +103,8 @@ def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVo
     # This is a simple use of the ideal gas law: P = nRT/V.
     finalHydrogenPressure_atm = ((molesOfHydrogen * 0.08206 * (waterTemperature + 237.15)) / (netChangeInVoid + InnerCapsuleVoidVolume))/0.001
     finalHydrogenPressure_psi = finalHydrogenPressure_atm * 14.6959
+
+
+
+    # Return the final results:
+    return finalHydrogenPressure_psi
