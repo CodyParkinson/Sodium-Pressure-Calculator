@@ -3,7 +3,7 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Steps File
 
 Cody Parkinson
-Last Update: 02/27/2024
+Last Update: 02/28/2024
 
 This file is used in the Main_Page to display the anticipated maximum pressure of the vessel
 after a sodium and water interaction.
@@ -56,13 +56,16 @@ Step numbers are directly related to Terrapower steps
 '''
 def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVoidVolume, InnerCapsuleVoidVolume, massOfSodiumCapsule, massOfSodiumRodlet):
     # 1. Use the outer capusule void volume and water density to determine the maximum mass/moles of water available.
-    massOfwater = OuterCapsuleVoidVolume * water_density(waterTemperature, waterPressureATR)
+    waterDensityAtTemp = water_density(waterTemperature, waterPressureATR)
+    massOfwater = OuterCapsuleVoidVolume * waterDensityAtTemp
     molesOfWater = massOfwater / 18.02 # Water is 18.02 g/mol
 
 
 
     #2. Use mass of sodium in the capsule (or capsule + rodlet) to determine volume of sodium initially present (cm^3).
-    volumeOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet) / sodium_density(waterTemperature + 273.15) # Convert temperature to K for function
+    sodiumDensityAtTemp = sodium_density(waterTemperature + 273.15) # Convert temperature to K for function
+    totalMassOfSodium = (massOfSodiumCapsule + massOfSodiumRodlet)
+    volumeOfSodium = totalMassOfSodium / sodiumDensityAtTemp
 
 
 
@@ -89,8 +92,8 @@ def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVo
 
 
     # 6. Use the denisty and mass of NaOH to determine final volume of NaOH solution. (cm^3)
-    volumeOfNaOHSolution = massOfNaOHSolution / NaOH_Density1(NaOHwtPercent, waterTemperature)
-
+    NaOHDensityAtTemp = NaOH_Density1(NaOHwtPercent, waterTemperature)
+    volumeOfNaOHSolution = massOfNaOHSolution / NaOHDensityAtTemp
 
 
     # 7. Calculate the net change in liquid volume to find available void volume.
@@ -101,10 +104,26 @@ def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVo
 
     # 8. Use the change in volume with the amount of generated H2 and temperature to calculate the postulated maximum anticipated pressure.
     # This is a simple use of the ideal gas law: P = nRT/V.
-    finalHydrogenPressure_atm = ((molesOfHydrogen * 0.08206 * (waterTemperature + 237.15)) / (netChangeInVoid + InnerCapsuleVoidVolume))/0.001
+    finalPlenumVolume = netChangeInVoid + InnerCapsuleVoidVolume
+    finalHydrogenPressure_atm = ((molesOfHydrogen * 0.08206 * (waterTemperature + 237.15)) / (finalPlenumVolume))/0.001
     finalHydrogenPressure_psi = finalHydrogenPressure_atm * 14.6959
 
 
 
+
+    # Dictionary of all results to return to Tkinter page
+    dictOfAllResults = {
+        "DensityOfWater": waterDensityAtTemp,
+        "DensityOfSodium": sodiumDensityAtTemp,
+        "DensityOfNaOH": NaOHDensityAtTemp,
+        "TotalSodiumMass": totalMassOfSodium, 
+        "NaOHwt%": NaOHwtPercent,
+        "NaOHVolume": volumeOfNaOHSolution,
+        "NetVoidChange": netChangeInVoid,
+        "FinalOpenCapsulePlenumVolume": finalPlenumVolume,
+        "finalHydrogrenPressurePSI": finalHydrogenPressure_psi,
+    }
+
+
     # Return the final results:
-    return finalHydrogenPressure_psi
+    return dictOfAllResults

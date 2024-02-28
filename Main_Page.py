@@ -3,7 +3,7 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Main Page
 
 Cody Parkinson
-Last Update: 02/27/2024
+Last Update: 02/28/2024
 
 Just for Cody: Make sure to run in python3.9 on Mac
 '''
@@ -29,7 +29,15 @@ Tkinter
 '''
 
 root = tk.Tk()
-root.title("Chemical Reaction Calculator")
+root.title("Sodium and Water Reaction Calculator - Cody Parkinson")
+
+
+
+
+
+
+
+
 
 # Check for float input
 def is_float(input):
@@ -87,15 +95,18 @@ def calculate():
         # Call your calculation function (modify this according to your actual function)
         final_result = MaximumPressureCalculator(water_temperature, water_pressure, outerCapsuleVoidVolume, innerCapsuleVoidVolume, massOfSodiumCapsule, massOfSodiumRodlet)
 
-        # Update the result label with the calculated value
-        result_label.config(text=f"Result: {final_result}")
+        # Update each label with the corresponding value from the dictionary
+        for key, value in final_result.items():
+            result_labels[key].config(text=f"{value}")
 
-    except ValueError:
+    except ValueError as e:
         # Update the result label to show the error
-        result_label.config(text=f"Error: {str(e)}")
+        result_label_error.config(text=f"Error: {str(e)}")
 
 # Attach the `calculate` function to the calculate button
 calculate_button = ttk.Button(root, text="Calculate", command=calculate)
+
+
 
 
 
@@ -111,8 +122,34 @@ calculate_button.grid(row=6, column=0, columnspan=2)
 
 
 
-result_label = ttk.Label(root, text="Result: ")
-result_label.grid(row=7, column=0, columnspan=2)
+def create_result_labels(root, keys, row_start):
+    labels = {}
+    for i, key in enumerate(keys):
+        # Create a label for the key
+        ttk.Label(root, text=f"{key}: ").grid(row=row_start + i, column=0, sticky="w")
+
+        # Create a label for the value and store it in a dictionary
+        value_label = ttk.Label(root, text="")
+        value_label.grid(row=row_start + i, column=1, sticky="w")
+        labels[key] = value_label
+    return labels
+
+# Create labels for each result
+keys = ["DensityOfWater", "DensityOfSodium", "DensityOfNaOH", "TotalSodiumMass", "NaOHwt%", "NaOHVolume", "NetVoidChange", "FinalOpenCapsulePlenumVolume", "finalHydrogrenPressurePSI"]
+result_labels = create_result_labels(root, keys, 8)  # Adjust row_start as needed
+
+
+
+# LOOK AT GPT FOR THE CODE TO UPDATE THE LABEL INCASE THERE IS AN ERROR 
+
+result_label_error = ttk.Label(root, text="Result: ")
+
+
+
+result_label_error = ttk.Label(root, text="Result: ")
+
+
+
 
 
 root.mainloop()
