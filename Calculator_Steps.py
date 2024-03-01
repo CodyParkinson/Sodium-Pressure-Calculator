@@ -3,7 +3,7 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Steps File
 
 Cody Parkinson
-Last Update: 02/28/2024
+Last Update: 02/29/2024
 
 This file is used in the Main_Page to display the anticipated maximum pressure of the vessel
 after a sodium and water interaction.
@@ -20,6 +20,9 @@ from Sodium_Density_Func import sodium_density
 from Water_Density_Func import water_density
 from NaOH_Density_Func import NaOH_Density1
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 
@@ -31,7 +34,7 @@ User Input Defaults
 waterTemperature = 100.0
 
 # Water Pressure (MPa)
-waterPressureATR = 350.0/145.038 # Convert psi to MPa from ATR
+waterPressureATR = 350.0/145.038 # Convert psi to MPa from ATR (2.413)
 
 # cm^3
 OuterCapsuleVoidVolume = 4.269
@@ -113,17 +116,66 @@ def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVo
 
     # Dictionary of all results to return to Tkinter page
     dictOfAllResults = {
-        "DensityOfWater": waterDensityAtTemp,
-        "DensityOfSodium": sodiumDensityAtTemp,
-        "DensityOfNaOH": NaOHDensityAtTemp,
-        "TotalSodiumMass": totalMassOfSodium, 
-        "NaOHwt%": NaOHwtPercent,
-        "NaOHVolume": volumeOfNaOHSolution,
-        "NetVoidChange": netChangeInVoid,
-        "FinalOpenCapsulePlenumVolume": finalPlenumVolume,
-        "finalHydrogrenPressurePSI": finalHydrogenPressure_psi,
+        "DensityOfWater": [waterDensityAtTemp, "g/cm^3"],
+        "DensityOfSodium": [sodiumDensityAtTemp, "g/cm^3"],
+        "DensityOfNaOH": [NaOHDensityAtTemp, "g/cm^3"],
+        "TotalSodiumMass": [totalMassOfSodium, "g"], 
+        "NaOHwt%": [NaOHwtPercent, "wt%"],
+        "NaOHVolume": [volumeOfNaOHSolution, "cm^3"],
+        "NetVoidChange": [netChangeInVoid, "cm^3"],
+        "FinalOpenCapsulePlenumVolume": [finalPlenumVolume, "cm^3"],
+        "finalHydrogrenPressurePSI": [finalHydrogenPressure_psi, "psi"],
     }
 
 
     # Return the final results:
-    return dictOfAllResults
+    return dictOfAllResults, {"molesOfHydrogen": molesOfHydrogen, "finalPlenumVolume": finalPlenumVolume}
+
+
+
+
+
+
+
+
+
+
+'''
+Call function to facilitate gathering of data to fill MATPLOTLIB graph of 
+pressure as a function of temperature
+'''
+def calculate_final_hydrogen_pressure(moles_of_hydrogen, water_temperature, final_plenum_volume):
+    return (((moles_of_hydrogen * 0.08206 * (water_temperature + 237.15)) / final_plenum_volume) / 0.001) * 14.6959
+
+
+
+
+
+
+
+
+
+
+'''
+Display a graph of the pressure as a function of temperature
+'''
+def plot_graph_PvsT(moles_of_hydrogen, final_plenum_volume):
+    # Generate water temperatures from 50 to 500
+    temperatures = np.linspace(50, 500, 50)
+
+    # Calculate pressures for each temperature
+    pressures = [calculate_final_hydrogen_pressure(moles_of_hydrogen, temp, final_plenum_volume) for temp in temperatures]
+
+    # Create the plot
+    fig, ax = plt.subplots()
+    ax.plot(temperatures, pressures)
+    ax.set_xlabel('Water Temperature (°C)')
+    ax.set_ylabel('Hydrogen Pressure (atm)')
+    ax.set_title('Hydrogen Pressure vs Water Temperature')
+
+    return fig
+
+
+
+
+

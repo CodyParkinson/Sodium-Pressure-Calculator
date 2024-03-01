@@ -3,7 +3,7 @@ Estimation of the pressure of a vessel after a sodium-water interaction
 Main Page
 
 Cody Parkinson
-Last Update: 02/28/2024
+Last Update: 02/29/2024
 
 Just for Cody: Make sure to run in python3.9 on Mac
 '''
@@ -12,77 +12,47 @@ Just for Cody: Make sure to run in python3.9 on Mac
 
 
 
+
 '''
 Imports
 '''
-
 import tkinter as tk
 from tkinter import ttk
-from Calculator_Steps import MaximumPressureCalculator
+from Calculator_Steps import MaximumPressureCalculator, plot_graph_PvsT
+from Tkinter_Op_Functions import create_entry_field_UI
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 
+canvas_widget = None
 
 
 '''
-Tkinter
+Tkinter Page Layout
 '''
-
 root = tk.Tk()
 root.title("Sodium and Water Reaction Calculator - Cody Parkinson")
 
 
 
 
-
-
-
-
-
-# Check for float input
-def is_float(input):
-    if input.isdigit() or input == "":
-        return True
-    try:
-        float(input)
-        return True
-    except ValueError:
-        return False
-
-
-# Template for entry field
-def create_entry_field(root, label_text, row, column):
-    # Create a label for the entry
-    label = ttk.Label(root, text=label_text)
-    label.grid(row=row, column=column)
-
-    # Create a StringVar to hold the text of the entry
-    entry_variable = tk.StringVar()
-
-    # Register the validation function
-    validate_float = root.register(is_float)
-
-    # Create the entry widget with validation
-    entry = ttk.Entry(root, textvariable=entry_variable, validate="key", validatecommand=(validate_float, '%P'))
-    entry.grid(row=row, column=column + 1)
-
-    # Return the StringVar associated with the entry, to retrieve its value later
-    return entry_variable
-
-
 # User inputs
-water_temperature_var = create_entry_field(root, "Water Temperature (C)", 0, 0)
-water_pressure_var = create_entry_field(root, "Water Pressure (MPa)", 1, 0)
-outerCapsuleVoidVolume_var = create_entry_field(root, "Outer Capsule Void Volume (cm^3)", 2, 0)
-innerCapsuleVoidVolume_var = create_entry_field(root, "Inner Capsule Void Volume (cm^3)", 3, 0)
-massOfSodiumCapsule_var = create_entry_field(root, "Sodium Mass within Capsule (g)", 4, 0)
-massOfSodiumRodlet_var = create_entry_field(root, "Sodium Mass within Rodlet (g)", 5, 0)
+water_temperature_var = create_entry_field_UI(root, "Water Temperature (C)", 0, 0)
+water_pressure_var = create_entry_field_UI(root, "Water Pressure (MPa)", 1, 0)
+outerCapsuleVoidVolume_var = create_entry_field_UI(root, "Outer Capsule Void Volume (cm^3)", 2, 0)
+innerCapsuleVoidVolume_var = create_entry_field_UI(root, "Inner Capsule Void Volume (cm^3)", 3, 0)
+massOfSodiumCapsule_var = create_entry_field_UI(root, "Sodium Mass within Capsule (g)", 4, 0)
+massOfSodiumRodlet_var = create_entry_field_UI(root, "Sodium Mass within Rodlet (g)", 5, 0)
 
 
 
 
 
 def calculate():
+
+    global canvas_widget  # Declare that you're using the global variable
+
+
     try:
         # Retrieve and convert values, using 0.0 or any default value if the field is empty
         water_temperature = float(water_temperature_var.get()) if water_temperature_var.get() else 0.0
@@ -93,11 +63,33 @@ def calculate():
         massOfSodiumRodlet = float(massOfSodiumRodlet_var.get()) if massOfSodiumRodlet_var.get() else 0.0
 
         # Call your calculation function (modify this according to your actual function)
-        final_result = MaximumPressureCalculator(water_temperature, water_pressure, outerCapsuleVoidVolume, innerCapsuleVoidVolume, massOfSodiumCapsule, massOfSodiumRodlet)
+        final_result, graphInfo = MaximumPressureCalculator(water_temperature, water_pressure, outerCapsuleVoidVolume, innerCapsuleVoidVolume, massOfSodiumCapsule, massOfSodiumRodlet)
 
         # Update each label with the corresponding value from the dictionary
         for key, value in final_result.items():
-            result_labels[key].config(text=f"{value}")
+            result_labels[key].config(text=str(value[0]) + " " + "[" + value[1] + "]")
+
+
+        # Prepare the graph based on the calculated results or input values
+        fig = plot_graph_PvsT(graphInfo["molesOfHydrogen"], graphInfo["finalPlenumVolume"])
+
+        # Check if canvas_widget is already created
+        if canvas_widget is not None:
+            # Clear the previous canvas (if it exists)
+            canvas_widget.get_tk_widget().destroy()
+
+
+
+        # Create a new canvas and add the updated graph
+        canvas = FigureCanvasTkAgg(fig, master=root)
+        canvas_widget = canvas  # Update the global variable
+        canvas_widget_widget = canvas.get_tk_widget()
+        canvas_widget_widget.grid(row=20, column=0, columnspan=10, sticky="nsew")  # Use grid
+
+
+
+
+
 
     except ValueError as e:
         # Update the result label to show the error
@@ -105,6 +97,13 @@ def calculate():
 
 # Attach the `calculate` function to the calculate button
 calculate_button = ttk.Button(root, text="Calculate", command=calculate)
+
+
+
+
+
+
+
 
 
 
@@ -140,13 +139,28 @@ result_labels = create_result_labels(root, keys, 8)  # Adjust row_start as neede
 
 
 
-# LOOK AT GPT FOR THE CODE TO UPDATE THE LABEL INCASE THERE IS AN ERROR 
-
-result_label_error = ttk.Label(root, text="Result: ")
-
 
 
 result_label_error = ttk.Label(root, text="Result: ")
+
+
+
+# Calculate the row position for the result_label_error
+error_label_row = 8 + len(keys) + 3  # +3 for two spaces and the next row
+
+# Place the result_label_error
+result_label_error = ttk.Label(root, text="ERRORS: ")
+result_label_error.grid(row=error_label_row, column=0, columnspan=2, sticky="w")
+
+
+
+
+
+
+
+
+
+
 
 
 
