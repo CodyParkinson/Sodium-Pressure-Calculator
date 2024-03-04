@@ -113,7 +113,6 @@ def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVo
 
 
 
-
     # Dictionary of all results to return to Tkinter page
     dictOfAllResults = {
         "DensityOfWater": [waterDensityAtTemp, "g/cm^3"],
@@ -169,9 +168,9 @@ def plot_graph_PvsT(moles_of_hydrogen, final_plenum_volume):
     # Create the plot
     fig, ax = plt.subplots()
     ax.plot(temperatures, pressures)
-    ax.set_xlabel('Water Temperature (°C)')
+    ax.set_xlabel('Temperature (°C)')
     ax.set_ylabel('Hydrogen Pressure (atm)')
-    ax.set_title('Hydrogen Pressure vs Water Temperature')
+    ax.set_title('Hydrogen Pressure vs Temperature')
 
     return fig
 
