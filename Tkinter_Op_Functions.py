@@ -22,6 +22,7 @@ from tkinter import ttk
 
 
 
+
 '''
 Check for float input. Do not allow letters or other characters to be input
 '''
