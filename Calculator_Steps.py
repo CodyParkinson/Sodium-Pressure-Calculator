@@ -123,7 +123,10 @@ def MaximumPressureCalculator(waterTemperature, waterPressureATR, OuterCapsuleVo
         "NaOHVolume": [volumeOfNaOHSolution, "cm^3"],
         "NetVoidChange": [netChangeInVoid, "cm^3"],
         "FinalOpenCapsulePlenumVolume": [finalPlenumVolume, "cm^3"],
-        "finalHydrogrenPressurePSI": [finalHydrogenPressure_psi, "psi"],
+        "finalHydrogrenPressurePSI": [finalHydrogenPressure_psi*1.175, "psi"],
+
+        # # # # # # CODY Make sure to have the Z calculated within code
+        # Remove the 1.175 from the final hydrogen pressure
     }
 
 
@@ -144,7 +147,9 @@ Call function to facilitate gathering of data to fill MATPLOTLIB graph of
 pressure as a function of temperature
 '''
 def calculate_final_hydrogen_pressure(moles_of_hydrogen, water_temperature, final_plenum_volume):
-    return (((moles_of_hydrogen * 0.08206 * (water_temperature + 237.15)) / final_plenum_volume) / 0.001) * 14.6959
+    return ((((moles_of_hydrogen * 0.08206 * (water_temperature + 237.15)) / final_plenum_volume) / 0.001) * 14.6959) * 1.175
+
+    # # # # CODY remove teh 1.175 once you calculate the Z internaly
 
 
 

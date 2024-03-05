@@ -8,7 +8,73 @@ This space will not be linked anywhere. It is just for quick testing.
 '''
 
 
+# PRESSURE BASED ON AMOUNT OF SODIUM GRAPH
 
+from Sodium_Density_Func import sodium_density
+from Water_Density_Func import water_density
+from NaOH_Density_Func import NaOH_Density1
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Assuming water_density, sodium_density, and NaOH_Density1 functions are defined as per your original code
+
+def MaximumPressureCalculator_Mass(waterTemperature, waterPressureATR, OuterCapsuleVoidVolume, InnerCapsuleVoidVolume, massOfSodium):
+    # 1. Use the outer capsule void volume and water density to determine the maximum mass/moles of water available.
+    waterDensityAtTemp = water_density(waterTemperature, waterPressureATR)
+    massOfwater = OuterCapsuleVoidVolume * waterDensityAtTemp
+    molesOfWater = massOfwater / 18.02  # Water is 18.02 g/mol
+    
+    # 2. Use the mass of sodium to determine the volume of sodium initially present (cm^3).
+    sodiumDensityAtTemp = sodium_density(waterTemperature + 273.15)  # Convert temperature to K for function
+    volumeOfSodium = massOfSodium / sodiumDensityAtTemp
+
+    # 3. Determine the moles of sodium available.
+    molesOfSodium = massOfSodium / 22.98977  # Sodium g/mol
+
+    # 4. Calculate the max amount of hydrogen and sodium hydroxide produced in reaction.
+    molesOfHydrogen = molesOfSodium * 0.5
+    molesOfNaOH = molesOfSodium
+    massOfHydrogen = molesOfHydrogen * 2.016  # H2 g/mol
+    massOfNaOH = molesOfNaOH * 39.997  # NaOH g/mol
+
+    # 5. Determine the concentration of the produced NaOH to estimate the density of the NaOH solution.
+    massOfNaOHSolution = massOfNaOH - massOfHydrogen + ((molesOfWater - molesOfSodium) * 18.02)
+    NaOHwtPercent = (massOfNaOH / massOfNaOHSolution) * 100
+
+    # 6. Use the density and mass of NaOH to determine final volume of NaOH solution. (cm^3)
+    NaOHDensityAtTemp = NaOH_Density1(NaOHwtPercent, waterTemperature)
+    volumeOfNaOHSolution = massOfNaOHSolution / NaOHDensityAtTemp
+
+    # 7. Calculate the net change in liquid volume to find available void volume.
+    netChangeInVoid = volumeOfSodium + OuterCapsuleVoidVolume - volumeOfNaOHSolution
+
+    # 8. Calculate the postulated maximum anticipated pressure using the ideal gas law.
+    finalPlenumVolume = netChangeInVoid + InnerCapsuleVoidVolume
+    finalHydrogenPressure_atm = ((molesOfHydrogen * 0.08206 * (waterTemperature + 237.15)) / (finalPlenumVolume)) / 0.001
+    finalHydrogenPressure_psi = finalHydrogenPressure_atm * 14.6959
+
+    return finalHydrogenPressure_psi
+
+def plot_pressure_vs_mass_of_sodium(waterTemperature, waterPressureATR, OuterCapsuleVoidVolume, InnerCapsuleVoidVolume, min_mass, max_mass):
+    # Range of sodium masses
+    sodium_masses = np.linspace(min_mass, max_mass, 50)
+
+    # Calculate pressures for each mass
+    pressures = [MaximumPressureCalculator_Mass(waterTemperature, waterPressureATR, OuterCapsuleVoidVolume, InnerCapsuleVoidVolume, mass)
+                 for mass in sodium_masses]
+
+    # Create the plot
+    fig, ax = plt.subplots()
+    ax.plot(sodium_masses, pressures)
+    ax.set_xlabel('Mass of Sodium (g)')
+    ax.set_ylabel('Hydrogen Pressure (psi)')
+    ax.set_title('Hydrogen Pressure vs Mass of Sodium')
+
+    plt.show()
+
+# Example usage:
+plot_pressure_vs_mass_of_sodium(100.0, 3, 100, 50, 1.0, 120.0)
 
 
 
